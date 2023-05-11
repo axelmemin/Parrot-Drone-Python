@@ -38,8 +38,9 @@ def count_fingers(lst):
     return cnt 
 
 q=input('Appuie sur entree pour commencer, ecrit "stop" pour arreter ')
+print('faire decompte de 3 à 1 avec les doigts puis signe choisi')
 score=[0,0]
-
+compte=[]
 
 while q!='stop':
     choix=None
@@ -62,27 +63,49 @@ while q!='stop':
 
             cnt = count_fingers(hand_keyPoints)
 
-            if not(prev==cnt):
+            if compte==[3,2,1]:
+                if not(prev==cnt):
+                    if not(start_init):
+                        start_time = time.time()
+                        start_init = True
+
+                    elif (end_time-start_time) > 1:
+                        if (cnt == 0):
+                            compte=[]
+                            choix='pierre'
+                            cv2.destroyAllWindows()
+                            cap.release()
+                            break
+                        elif (cnt == 2):
+                            compte=[]
+                            choix='ciseaux' 
+                            cv2.destroyAllWindows()
+                            cap.release()
+                            break
+                        elif (cnt == 5):
+                            compte=[]
+                            choix='feuille'
+                            cv2.destroyAllWindows()
+                            cap.release()
+                            break
+                        prev = cnt
+                        start_init = False
+                drawing.draw_landmarks(frm, hand_keyPoints, hands.HAND_CONNECTIONS)
+            
+            if not(prev==cnt) and compte!=[3,2,1]:
                 if not(start_init):
                     start_time = time.time()
                     start_init = True
-
-                elif (end_time-start_time) > 1:
-                    if (cnt == 0):
-                        choix='pierre'
-                        cv2.destroyAllWindows()
-                        cap.release()
-                        break
-                    elif (cnt == 2):
-                        choix='ciseaux' 
-                        cv2.destroyAllWindows()
-                        cap.release()
-                        break
-                    elif (cnt == 5):
-                        choix='feuille'
-                        cv2.destroyAllWindows()
-                        cap.release()
-                        break
+                elif (end_time-start_time) > 0.5:
+                    if (cnt == 3) and compte==[]:
+                        compte.append(3)
+                        print(compte)
+                    elif (cnt == 2) and compte==[3]:
+                        compte.append(2)
+                        print(compte)
+                    elif (cnt == 1) and compte==[3,2]:
+                        compte.append(1)
+                        print(compte)
                     prev = cnt
                     start_init = False
             drawing.draw_landmarks(frm, hand_keyPoints, hands.HAND_CONNECTIONS)
@@ -96,15 +119,18 @@ while q!='stop':
     drone=obj[random.randint(0,2)]
     if jeu[drone]==choix:
         score[0]=score[0]+1
+        print(choix) 
         print(drone)
         print('you won')
         print(str(score[0])+' - '+str(score[1]))
     elif drone==choix:
+        print(choix)
         print(drone)
         print('tie')
         print(str(score[0])+' - '+str(score[1]))
-    else:
+    elif jeu[choix]==drone:
         score[1]=score[1]+1
+        print(choix)
         print(drone)
         print('you loose')
         print(str(score[0])+' - '+str(score[1]))
