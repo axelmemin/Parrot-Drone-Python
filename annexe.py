@@ -12,7 +12,7 @@ import pygame
 
 #definition des mouvements élementaires du drone
 def avant():
-    mambo.fly_direct(roll=0, pitch=25, yaw=0, vertical_movement=0, duration=0.1)
+    mambo.fly_direct(roll=0, pitch=-25, yaw=0, vertical_movement=0, duration=0.1)
         
 def arriere():
     mambo.fly_direct(roll=0, pitch=25, yaw=0, vertical_movement=0, duration=0.1)
@@ -21,14 +21,14 @@ def gauche():
     mambo.fly_direct(roll=-25, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
     
 def droite():
-    mambo.fly_direct(roll=-25, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
+    mambo.fly_direct(roll=25, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
 
-def diago_avant():
-        mambo.fly_direct(roll=30, pitch=30, yaw=0, vertical_movement=0, duration=0.1)
-
-def diago_arriere():
-        mambo.fly_direct(roll=30, pitch=-30, yaw=0, vertical_movement=0, duration=0.1)
-
+def haut():
+    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=20, duration=0.1)
+    
+def haut():
+    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-20, duration=0.1)
+    
 def rotation(deg):
         mambo.turn_degrees(deg)
         

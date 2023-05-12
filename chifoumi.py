@@ -50,11 +50,13 @@ while q!='stop':
     hand_obj = hands.Hands(max_num_hands=1)
     start_init = False 
     prev = -1
+    x=None
+    y=None
     while True:
         end_time = time.time()
         _, frm = cap.read()
         frm = cv2.flip(frm, 1)
-
+        cv2.line(frm, (0, 0), (400, 400), (0, 0, 255))
         res = hand_obj.process(cv2.cvtColor(frm, cv2.COLOR_BGR2RGB))
 
         if res.multi_hand_landmarks:
@@ -109,8 +111,33 @@ while q!='stop':
                     prev = cnt
                     start_init = False
             drawing.draw_landmarks(frm, hand_keyPoints, hands.HAND_CONNECTIONS)
-
+            
+            for i in range(21):
+                if hand_keyPoints.landmark[i].x*100 < 20 :
+                    x=1
+                elif hand_keyPoints.landmark[i].x*100 > 80 :
+                    x=2
+                else:
+                    x=0
+                if hand_keyPoints.landmark[i].y*100 < 20 :
+                    y=1
+                elif hand_keyPoints.landmark[i].y*100 > 80 :
+                    y=2
+                else:
+                    y=0
+            
+        if x==1:
+            print('dehors gauche')
+        elif x==2:
+            print('dehors droite')
+        if y==1:
+            print('dehors haut')
+        elif y==2:
+            print('dehors bas')
         cv2.imshow("window", frm)
+        
+        
+
 
         if cv2.waitKey(1) == ord('q'):
             cv2.destroyAllWindows()

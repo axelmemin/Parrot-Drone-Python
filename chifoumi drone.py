@@ -13,6 +13,7 @@ import numpy as np
 import time
 import mediapipe as mp
 import random
+from annexe import gauche,droite, haut, bas
 
 jeu={'pierre':'feuille', 'feuille':'ciseaux', 'ciseaux':'pierre'}
 obj=['pierre','feuille','ciseaux']
@@ -78,6 +79,8 @@ def demo_mambo_user_vision_function(mamboVision, args):
                 hand_obj = hands.Hands(max_num_hands=1)
                 start_init = False 
                 prev = -1
+                x=None
+                y=None
                 while True:
                     with mss.mss() as sct:
                         # Part of the screen to capture
@@ -143,11 +146,36 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                         elif (cnt == 5) and q==[4]:
                                             q.append(5)
                                         prev = cnt
-                                        start_init = False                                
+                                        start_init = False
+                                
+                                for i in range(21):
+                                    if hand_keyPoints.landmark[i].x*100 < 20 :
+                                        x=1
+                                    elif hand_keyPoints.landmark[i].x*100 > 80 :
+                                        x=2
+                                    else:
+                                        x=0
+                                    if hand_keyPoints.landmark[i].y*100 < 20 :
+                                        y=1
+                                    elif hand_keyPoints.landmark[i].y*100 > 80 :
+                                        y=2
+                                    else:
+                                        y=0
+                                
+                            if x==1:
+                                droite()
+                            elif x==2:
+                                gauche()
+                            if y==1:
+                                bas()
+                            elif y==2:
+                                haut
+                                
                             if cv2.waitKey(1) == ord('q'):
                                 cv2.destroyAllWindows()
                                 cap.release()
                                 break
+                            
                         drone=obj[random.randint(0,2)]
                         if jeu[drone]==choix:
                             score[0]=score[0]+1
