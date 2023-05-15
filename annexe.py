@@ -10,26 +10,27 @@ from implementation import *
 import cv2
 import pygame
 
-#definition des mouvements élementaires du drone
-def avant():
-    mambo.fly_direct(roll=0, pitch=-25, yaw=0, vertical_movement=0, duration=0.1)
-        
-def arriere():
-    mambo.fly_direct(roll=0, pitch=25, yaw=0, vertical_movement=0, duration=0.1)
-    
-def gauche():
-    mambo.fly_direct(roll=-25, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
-    
-def droite():
-    mambo.fly_direct(roll=25, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
 
-def haut():
-    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=20, duration=0.1)
+#definition des mouvements élementaires du drone
+def avant(mambo):
+    mambo.fly_direct(roll=0, pitch=20, yaw=0, vertical_movement=0, duration=0.1)
+        
+def arriere(mambo):
+    mambo.fly_direct(roll=0, pitch=-20, yaw=0, vertical_movement=0, duration=0.1)
     
-def haut():
-    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-20, duration=0.1)
+def gauche(mambo):
+    mambo.fly_direct(roll=-10, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
     
-def rotation(deg):
+def droite(mambo):
+    mambo.fly_direct(roll=10, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
+
+def haut(mambo):
+    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=10, duration=0.1)
+    
+def bas(mambo):
+    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-10, duration=0.1)
+    
+def rotation(mambo, deg):
         mambo.turn_degrees(deg)
         
 def grille():
@@ -309,92 +310,188 @@ def dist(di):
 
 #fonction permettant au drone de réaliser le trajet suivant la carte donnée
 #angles rotation à revoir suivant orientation interpretation carte
-def carte(path, di):
-    #variable stockant orientation drone
-    a=0
+def carte(path, mambo):
+    #montant ou descendant
+    m=1
+    #avancant ou reculant
+    a=1
+    #meme orientation ou non
+    b=0
     for i in range(len(path)-1):
         #cas meme ligne
         if path[i][0]==path[i+1][0]:
             #comparaison coordonnée colonne pour savoir rotation gauche ou droite
-            if path[i][1]==path[i+1][1]:
-                mambo.turn_degrees(90)
-                a=90
-                dist(di)
+            if path[i][1]==path[i+1][1]+1:
+                if b==0:
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==1 and c==1:
+                    mambo.smart_sleep(1)
+                    mambo.turn_degrees(-90)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==1 and c==0:
+                    mambo.smart_sleep(1)
+                    mambo.turn_degrees(-90)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                a=0
             else:
-                mambo.turn_degrees(-90)
-                a=-90
-                dist(di)
-        
+                if b==0:
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==1 and c==0:
+                    mambo.smart_sleep(1)
+                    mambo.turn_degrees(90)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==1 and c==1:
+                    mambo.smart_sleep(1)
+                    mambo.turn_degrees(-90)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                a=1
+            b=0
+                
         #cas ligne différente
         else:
             #comparaison coordonnée ligne pour savoir rotation gauche ou droite            
             if path[i][0]==path[i+1][0]+1:
-                #rotation suivant orientation drone
-                if a==90:
+                if b==1:
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==0 and a==1:
+                    mambo.smart_sleep(1)
                     mambo.turn_degrees(-90)
-                    a=0
-                    dist(di)
-                elif a==-90:
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==0 and a==0:
+                    mambo.smart_sleep(1)
                     mambo.turn_degrees(90)
-                    a=0
-                    dist(di)
-                elif a==0:
-                    dist(di)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                c=1
             else:
-                mambo.turn_degrees(180)
-                dist(di)
+                if b==1:
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==0 and a==0:
+                    mambo.smart_sleep(1)
+                    mambo.turn_degrees(90)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                elif b==0 and a==1:
+                    mambo.smart_sleep(1)
+                    mambo.turn_degrees(-90)
+                    mambo.smart_sleep(1)
+                    avant(mambo)
+                c=0
+            b=1
+            
+def instruc(main):
+    for i in range(len(main)):
+        if main[i]==1:
+            mambo.flip(direction='back')
+        if main[i]==2:
+            mambo.flip(direction='front')
+        if main[i]==3:
+            mambo.turn_degrees(180)
+            mambo.turn_degrees(180)
+        if main[i]==4:
+            mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=20, duration=1)
+            mambo.smart_sleep(1)
+            mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-20, duration=1)
+        if main[i]==5:
+            mambo.fly_direct(roll=20, pitch=0, yaw=0, vertical_movement=0, duration=1)
+            mambo.smart_sleep(1)
+            mambo.fly_direct(roll=20, pitch=0, yaw=0, vertical_movement=0, duration=1)
+        mambo.smart_sleep(2)
+        
+def anim(vic, mambo):
+    if vic == 0:
+        mambo.turn_degrees(40)
+        mambo.smart_sleep(0.8)
+        mambo.turn_degrees(-40)
+    elif vic == 1:
+        mambo.flip(direction='back')
+    elif vic == 2:
+        mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-20, duration=0.2)
+        mambo.smart_sleep(2)
+        mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=20, duration=0.2)
+        
 
-def vol(p, manip):
+def vol(p, manip, mambo):
     if p[-1]==1:
         #trajet du point de départ à l'objectif
-        carte(p[0], dist)
+        carte(p[0], mambo)
 
     elif p[-1]==2:
         #trajet du point de départ au lieu de la premiere manipulation
-        carte(p[0], dist)
+        carte(p[0], mambo)
         mambo.smart_sleep(1)
         #realisation premiere manipulation
         instruc(manip[0])
-        
+        mambo.smart_sleep(1)
         #trajet du lieu de la premiere manipulation a l'objectif
-        carte(p[1], dist)
+        carte(p[1], mambo)
 
     elif p[-1]==3:
         #trajet du point de départ au lieu de la premiere manipulation
-        carte(p[0], dist)
+        carte(p[0], mambo)
         mambo.smart_sleep(1)
         #realisation premiere manipulation
         instruc(manip[0])
-        
+        mambo.smart_sleep(1)
         #trajet du lieu de la premiere manipulation au lieu de la deuxieme manipulation
-        carte(p[1], dist)
+        carte(p[1], mambo)
         mambo.smart_sleep(1)
         #realisation deuxieme manipulation        
         instruc(manip[1])
-
+        mambo.smart_sleep(1)
         #trajet du lieu de la deuxieme manipulation a l'objectif       
-        carte(p[2], dist)
+        carte(p[2], mambo)
         
     else:
         #trajet du point de départ au lieu de la premiere manipulation
-        carte(p[0], dist)
+        carte(p[0], mambo)
         mambo.smart_sleep(1)
         #realisation premiere manipulation
         instruc(manip[0])
-        
+        mambo.smart_sleep(1)
         #trajet du lieu de la premiere manipulation au lieu de la deuxieme manipulation
-        carte(p[1], dist)
+        carte(p[1], mambo)
         mambo.smart_sleep(1)
         #realisation deuxieme manipulation        
         instruc(manip[1])
-
+        mambo.smart_sleep(1)
         #trajet du lieu de la deuxieme manipulation au lieu de la troisieme manipulation        
-        carte(p[2], dist)
+        carte(p[2], mambo)
         mambo.smart_sleep(1)
         #realisation troisieme manipulation
         instruc(manip[2])
-        
+        mambo.smart_sleep(1)        
         #trajet du lieu de la troisieme manipulation a l'objectif
-        carte(p[3], dist)
+        carte(p[3], mambo)
         
+def count_fingers(lst):
+    cnt = 0
+
+    thresh = (lst.landmark[0].y*100 - lst.landmark[9].y*100)/2
+
+    if (lst.landmark[5].y*100 - lst.landmark[8].y*100) > thresh:
+        cnt += 1
+
+    if (lst.landmark[9].y*100 - lst.landmark[12].y*100) > thresh:
+        cnt += 1
+
+    if (lst.landmark[13].y*100 - lst.landmark[16].y*100) > thresh:
+        cnt += 1
+
+    if (lst.landmark[17].y*100 - lst.landmark[20].y*100) > thresh:
+        cnt += 1
+
+    if (lst.landmark[5].x*100 - lst.landmark[4].x*100) > 6:
+        cnt += 1
+        
+    return cnt         
         

@@ -13,13 +13,13 @@ import numpy as np
 import time
 import mediapipe as mp
 import random
-from annexe import gauche,droite, haut, bas
+from annexe import gauche, droite, haut, bas, avant, arriere, anim
 
 jeu={'pierre':'feuille', 'feuille':'ciseaux', 'ciseaux':'pierre'}
 obj=['pierre','feuille','ciseaux']
 
 # set this to true if you want to fly for the demo
-testFlying = False
+testFlying = True
 
 class UserVision:
     def __init__(self, vision):
@@ -68,12 +68,172 @@ def demo_mambo_user_vision_function(mamboVision, args):
     if (testFlying):
         #tache réalisée si testFlying = True        
         if (mambo.sensors.flying_state != "emergency"):
+            q=[]
+            score=[0,0]
+            print("taking off!")
+            mambo.safe_takeoff(5)
+            drawing = mp.solutions.drawing_utils
+            hands = mp.solutions.hands
+            hand_obj = hands.Hands(max_num_hands=1)
+            start_init = False 
+            prev = -1
+            while q!=[4,5,4]:
+                compte=[]
+                choix=None
+                x=None
+                y=None
+                while True and q!=[4,3,4]:
+                    with mss.mss() as sct:
+                        # Part of the screen to capture
+                        monitor = {"top": 0, "left": 0, "width": 2000, "height": 2000}
+                        while "Screen capturing":
+                            end_time = time.time()
+                        
+                            # Get raw pixels from the screen, save it to a Numpy array
+                            frm = np.array(sct.grab(monitor))
+                            frm = cv2.flip(frm, 1)
+                            
+                            res = hand_obj.process(cv2.cvtColor(frm, cv2.COLOR_BGR2RGB))
+
+                            if res.multi_hand_landmarks:
+
+                                hand_keyPoints = res.multi_hand_landmarks[0]
+
+                                cnt = count_fingers(hand_keyPoints)
+
+                                if compte==[3,2,1]:
+                                    if not(prev==cnt):
+                                        if not(start_init):
+                                            start_time = time.time()
+                                            start_init = True
+
+                                        elif (end_time-start_time) > 0.7:
+                                            if (cnt == 0):
+                                                compte=[]
+                                                choix='pierre'
+                                                break
+                                            elif (cnt == 2):
+                                                compte=[]
+                                                choix='ciseaux' 
+                                                break
+                                            elif (cnt == 5 or cnt == 4):
+                                                compte=[]
+                                                choix='feuille'
+                                                break
+                                            prev = cnt
+                                            start_init = False  
+                                            
+                                if not(prev==cnt) and compte!=[3,2,1]:
+                                    if not(start_init):
+                                        start_time = time.time()
+                                        start_init = True
+                                    elif (end_time-start_time) > 0.3:
+                                        if (cnt == 3) and compte==[]:
+                                            compte.append(3)
+                                            print(compte)
+                                        elif (cnt == 2) and compte==[3]:
+                                            compte.append(2)
+                                            print(compte)
+                                        elif (cnt == 1) and compte==[3,2]:
+                                            compte.append(1)
+                                            print(compte)
+                                        if (cnt == 4) and (q==[] or q==[4,3]):
+                                            q.append(4)
+                                            print(q)
+                                        elif (cnt == 3) and q==[4]:
+                                            q.append(3)
+                                            print(q)
+                                        prev = cnt
+                                        start_init = False
+                                """
+                                for i in range(21):
+                                    if hand_keyPoints.landmark[i].x*100 < 20 :
+                                        x=1
+                                    elif hand_keyPoints.landmark[i].x*100 > 80 :
+                                        x=2
+                                    else:
+                                        x=0
+                                    if hand_keyPoints.landmark[i].y*100 < 20 :
+                                        y=1
+                                    elif hand_keyPoints.landmark[i].y*100 > 80 :
+                                        y=2
+                                    else:
+                                        y=0
+                               
+                            if x==1:
+                                droite(mambo)
+                            elif x==2:
+                                gauche(mambo)
+                            if y==1:
+                                haut(mambo)
+                            elif y==2:
+                                bas(mambo)
+                            """    
+                            if q==[4,5,4]:
+                                cv2.destroyAllWindows()
+                                break
+                        if q==[4,5,4]:
+                            break    
+                        drone=obj[random.randint(0,2)]
+                        vic=0
+                        if jeu[drone]==choix:
+                            score[0]=score[0]+1
+                            print(choix) 
+                            print(drone)
+                            print('you won')
+                            print(str(score[0])+' - '+str(score[1]))
+                            vic=1
+                        elif drone==choix:
+                            print(choix)
+                            print(drone)
+                            print('tie')
+                            print(str(score[0])+' - '+str(score[1]))
+                            vic=0
+                        elif jeu[choix]==drone:
+                            score[1]=score[1]+1
+                            print(choix)
+                            print(drone)
+                            print('you loose')
+                            print(str(score[0])+' - '+str(score[1]))
+                            vic=2
+                        if drone == 'pierre':
+                            avant(mambo)
+                            mambo.smart_sleep(1)
+                            anim(vic, mambo)
+                            mambo.smart_sleep(1)
+                            arriere(mambo)
+                            break
+                        elif drone== 'ciseaux':
+                            gauche(mambo)
+                            mambo.smart_sleep(1)
+                            anim(vic, mambo)
+                            mambo.smart_sleep(1)
+                            droite(mambo)
+                            break
+                        else:
+                            droite(mambo)
+                            mambo.smart_sleep(1)
+                            anim(vic, mambo)
+                            mambo.smart_sleep(1)
+                            gauche(mambo)
+                            break
+                q=[]
+            print("landing")
+            print("flying state is %s" % mambo.sensors.flying_state)
+            mambo.land(5)
+            mambo.safe_land(5)
+
+            mamboVision.vision_running = False
+            mambo.disconnect()
+            mamboVision.close_exit()
+            cv2.destroyAllWindows()
+    else:
+        if (mambo.sensors.flying_state != "emergency"):
             q=None
             compte=[]
             score=[0,0]
             while q!=[4,5,4]:
                 choix=None
-                cap = cv2.VideoCapture(0)
                 drawing = mp.solutions.drawing_utils
                 hands = mp.solutions.hands
                 hand_obj = hands.Hands(max_num_hands=1)
@@ -111,153 +271,16 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                                 compte=[]
                                                 choix='pierre'
                                                 cv2.destroyAllWindows()
-                                                cap.release()
                                                 break
                                             elif (cnt == 2):
                                                 compte=[]
                                                 choix='ciseaux' 
                                                 cv2.destroyAllWindows()
-                                                cap.release()
                                                 break
-                                            elif (cnt == 5):
+                                            elif (cnt == 5 or cnt == 4):
                                                 compte=[]
                                                 choix='feuille'
                                                 cv2.destroyAllWindows()
-                                                cap.release()
-                                                break
-                                            prev = cnt
-                                            start_init = False                                
-                                if not(prev==cnt) and compte!=[3,2,1]:
-                                    if not(start_init):
-                                        start_time = time.time()
-                                        start_init = True
-                                    elif (end_time-start_time) > 0.5:
-                                        if (cnt == 3) and compte==[]:
-                                            compte.append(3)
-                                            print(compte)
-                                        elif (cnt == 2) and compte==[3]:
-                                            compte.append(2)
-                                            print(compte)
-                                        elif (cnt == 1) and compte==[3,2]:
-                                            compte.append(1)
-                                            print(compte)
-                                        if (cnt == 4) and (q==[] or q==[4,5]):
-                                            q.append(4)
-                                        elif (cnt == 5) and q==[4]:
-                                            q.append(5)
-                                        prev = cnt
-                                        start_init = False
-                                
-                                for i in range(21):
-                                    if hand_keyPoints.landmark[i].x*100 < 20 :
-                                        x=1
-                                    elif hand_keyPoints.landmark[i].x*100 > 80 :
-                                        x=2
-                                    else:
-                                        x=0
-                                    if hand_keyPoints.landmark[i].y*100 < 20 :
-                                        y=1
-                                    elif hand_keyPoints.landmark[i].y*100 > 80 :
-                                        y=2
-                                    else:
-                                        y=0
-                                
-                            if x==1:
-                                droite()
-                            elif x==2:
-                                gauche()
-                            if y==1:
-                                bas()
-                            elif y==2:
-                                haut
-                                
-                            if cv2.waitKey(1) == ord('q'):
-                                cv2.destroyAllWindows()
-                                cap.release()
-                                break
-                            
-                        drone=obj[random.randint(0,2)]
-                        if jeu[drone]==choix:
-                            score[0]=score[0]+1
-                            print(choix) 
-                            print(drone)
-                            print('you won')
-                            print(str(score[0])+' - '+str(score[1]))
-                        elif drone==choix:
-                            print(choix)
-                            print(drone)
-                            print('tie')
-                            print(str(score[0])+' - '+str(score[1]))
-                        elif jeu[choix]==drone:
-                            score[1]=score[1]+1
-                            print(choix)
-                            print(drone)
-                            print('you loose')
-                            print(str(score[0])+' - '+str(score[1]))
-            print("landing")
-            print("flying state is %s" % mambo.sensors.flying_state)
-            mambo.safe_land(5)
-
-            mamboVision.vision_running = False
-            mambo.disconnect()
-            mamboVision.close_exit()
-            cv2.destroyAllWindows()
-    else:
-        if (mambo.sensors.flying_state != "emergency"):
-            q=None
-            compte=[]
-            score=[0,0]
-            while q!=[4,5,4]:
-                choix=None
-                cap = cv2.VideoCapture(0)
-                drawing = mp.solutions.drawing_utils
-                hands = mp.solutions.hands
-                hand_obj = hands.Hands(max_num_hands=1)
-                start_init = False 
-                prev = -1
-                while True:
-                    with mss.mss() as sct:
-                        # Part of the screen to capture
-                        monitor = {"top": 0, "left": 0, "width": 2000, "height": 2000}
-                        while "Screen capturing":
-                            end_time = time.time()
-                        
-                            # Get raw pixels from the screen, save it to a Numpy array
-                            frm = np.array(sct.grab(monitor))
-                            frm = cv2.flip(frm, 1)
-                            
-                            res = hand_obj.process(cv2.cvtColor(frm, cv2.COLOR_BGR2RGB))
-
-                            if res.multi_hand_landmarks:
-
-                                hand_keyPoints = res.multi_hand_landmarks[0]
-
-                                cnt = count_fingers(hand_keyPoints)
-
-                                if compte==[3,2,1]:
-                                    if not(prev==cnt):
-                                        if not(start_init):
-                                            start_time = time.time()
-                                            start_init = True
-
-                                        elif (end_time-start_time) > 1:
-                                            if (cnt == 0):
-                                                compte=[]
-                                                choix='pierre'
-                                                cv2.destroyAllWindows()
-                                                cap.release()
-                                                break
-                                            elif (cnt == 2):
-                                                compte=[]
-                                                choix='ciseaux' 
-                                                cv2.destroyAllWindows()
-                                                cap.release()
-                                                break
-                                            elif (cnt == 5):
-                                                compte=[]
-                                                choix='feuille'
-                                                cv2.destroyAllWindows()
-                                                cap.release()
                                                 break
                                             prev = cnt
                                             start_init = False
@@ -281,10 +304,33 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                         elif (cnt == 5) and q==[4]:
                                             q.append(5)
                                         prev = cnt
-                                        start_init = False                                
+                                        start_init = False
+                                        
+                                for i in range(21):
+                                    if hand_keyPoints.landmark[i].x*100 < 20 :
+                                        x=1
+                                    elif hand_keyPoints.landmark[i].x*100 > 80 :
+                                        x=2
+                                    else:
+                                        x=0
+                                    if hand_keyPoints.landmark[i].y*100 < 20 :
+                                        y=1
+                                    elif hand_keyPoints.landmark[i].y*100 > 80 :
+                                        y=2
+                                    else:
+                                        y=0
+                                
+                            if x==1:
+                                print('dehors gauche')
+                            elif x==2:
+                                print('dehors droite')
+                            if y==1:
+                                print('dehors haut')
+                            elif y==2:
+                                print('dehors bas')
+                                                            
                             if cv2.waitKey(1) == ord('q'):
                                 cv2.destroyAllWindows()
-                                cap.release()
                                 break
                         drone=obj[random.randint(0,2)]
                         if jeu[drone]==choix:

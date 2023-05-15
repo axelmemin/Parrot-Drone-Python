@@ -5,11 +5,30 @@ Created on Wed May 10 15:43:35 2023
 @author: axelm
 """
 from pyparrot.Minidrone import Mambo
+from pyparrot.DroneVisionGUI import DroneVisionGUI
 #equivalent A* python
 from implementation import *
 import cv2
 import pygame
 from annexe import *
+import mediapipe as mp
+import mss
+import time
+import numpy as np
+
+class UserVision:
+    def __init__(self, vision):
+        self.index = 0
+        self.vision = vision
+
+    def save_pictures(self, args):
+        # print("in save pictures on image %d " % self.index)
+
+        img = self.vision.get_latest_valid_picture()
+
+        if (img is not None):
+            filename = "test_image_%06d.png" % self.index
+            self.index +=1
 
 p=grille()
 
@@ -23,10 +42,10 @@ mamboAddr = "fe80::8469:b69f:b4b0:16bb%9"
 mambo = Mambo(None, use_wifi=True)
 
 print("trying to connect")
-#success = mambo.connect(num_retries=3)
+success = mambo.connect(num_retries=3)
 print("connected: %s" % success)
 
-testFlying = False
+testFlying = True
 
 def demo_mambo_user_vision_function(mamboVision, args):
     """
@@ -96,25 +115,27 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                 prev = cnt
                                 start_init = False
                     #si trois nombres montrés réaliser manipulation
-                    if len(main)==3:
+                    if len(main)==p[-1]-1:
+                        mambo.smart_sleep(2)
                         print("taking off!")
                         mambo.safe_takeoff(3)
                         
                         if (mambo.sensors.flying_state != "emergency"):
                             #il y aura ici le code permettant la capture video live de l'ecran ainsi que le moyen de detecter voulu
-                            print("taking off!")
-                            mambo.safe_takeoff(5)
                             
                             print("flying state is %s" % mambo.sensors.flying_state)
                             mambo.smart_sleep(2)
                             
-                            vol(p, manip)
+                            vol(p, main, mambo)
 
                             mambo.smart_sleep(2)
                             print("landing")
+                            mambo.land()
                             mambo.safe_land(5)
                             print("flying state is %s" % mambo.sensors.flying_state)
                             mambo.smart_sleep(2)
+                        main=[]
+                        break
 
             mamboVision.vision_running = False
             mambo.disconnect()
