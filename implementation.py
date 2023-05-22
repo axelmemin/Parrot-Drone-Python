@@ -73,11 +73,6 @@ def draw_grid(graph, **style):
         print()
     print("~~~" * graph.width)
 
-# data from main article
-DIAGRAM1_WALLS = [from_id_width(id, width=30) for id in [21,22,51,52,81,82,93,94,111,112,123,124,133,134,141,142,153,154,163,164,171,172,173,174,175,183,184,193,194,201,202,203,204,205,213,214,223,224,243,244,253,254,273,274,283,284,303,304,313,314,333,334,343,344,373,374,403,404,433,434]]
-
-GridLocation = Tuple[int, int]
-
 class SquareGrid:
     def __init__(self, width: int, height: int):
         self.width = width
@@ -111,16 +106,6 @@ class GridWithWeights(SquareGrid):
     def cost(self, from_node: GridLocation, to_node: GridLocation) -> float:
         return self.weights.get(to_node, 1)
 
-diagram4 = GridWithWeights(10, 10)
-diagram4.walls = [(1, 7), (1, 8), (2, 7), (2, 8), (3, 7), (3, 8)]
-diagram4.weights = {loc: 5 for loc in [(3, 4), (3, 5), (4, 1), (4, 2),
-                                       (4, 3), (4, 4), (4, 5), (4, 6),
-                                       (4, 7), (4, 8), (5, 1), (5, 2),
-                                       (5, 3), (5, 4), (5, 5), (5, 6),
-                                       (5, 7), (5, 8), (6, 2), (6, 3),
-                                       (6, 4), (6, 5), (6, 6), (6, 7),
-                                       (7, 3), (7, 4), (7, 5)]}
-
 import heapq
 
 class PriorityQueue:
@@ -136,33 +121,6 @@ class PriorityQueue:
     def get(self) -> T:
         return heapq.heappop(self.elements)[1]
 
-def dijkstra_search(graph: WeightedGraph, start: Location, goal: Location):
-    frontier = PriorityQueue()
-    frontier.put(start, 0)
-    came_from: dict[Location, Optional[Location]] = {}
-    cost_so_far: dict[Location, float] = {}
-    came_from[start] = None
-    cost_so_far[start] = 0
-    
-    while not frontier.empty():
-        current: Location = frontier.get()
-        
-        if current == goal:
-            break
-        
-        for next in graph.neighbors(current):
-            new_cost = cost_so_far[current] + graph.cost(current, next)
-            if next not in cost_so_far or new_cost < cost_so_far[next]:
-                cost_so_far[next] = new_cost
-                priority = new_cost
-                frontier.put(next, priority)
-                came_from[next] = current
-    
-    return came_from, cost_so_far
-
-# thanks to @m1sp <Jaiden Mispy> for this simpler version of
-# reconstruct_path that doesn't have duplicate entries
-
 def reconstruct_path(came_from: dict[Location, Location],
                      start: Location, goal: Location) -> list[Location]:
 
@@ -176,9 +134,6 @@ def reconstruct_path(came_from: dict[Location, Location],
     path.append(start) # optional
     path.reverse() # optional
     return path
-
-diagram_nopath = GridWithWeights(10, 10)
-diagram_nopath.walls = [(5, row) for row in range(10)]
 
 def heuristic(a: GridLocation, b: GridLocation) -> float:
     (x1, y1) = a
@@ -257,21 +212,3 @@ class GridWithAdjustedWeights(GridWithWeights):
         if (x1 + y1) % 2 == 0 and x2 != x1: nudge = 1
         if (x1 + y1) % 2 == 1 and y2 != y1: nudge = 1
         return prev_cost + 0.001 * nudge
-    
-"""
-start, goal = (1, 4), (8, 3)
-came_from, cost_so_far = a_star_search(diagram4, start, goal)
-draw_grid(diagram4, point_to=came_from, start=start, goal=goal)
-print()
-draw_grid(diagram4, path=reconstruct_path(came_from, start=start, goal=goal))
-
-diagram = GridWithWeights(9, 5)
-diagram.walls = [(1, 7), (1, 8), (2, 7), (2, 8), (3, 7), (3, 8)]
-diagram4.weights = {loc: 5 for loc in [(3, 4), (3, 5), (4, 1), (4, 2),
-                                       (4, 3), (4, 4), (4, 5), (4, 6),
-                                       (4, 7), (4, 8), (5, 1), (5, 2),
-                                       (5, 3), (5, 4), (5, 5), (5, 6),
-                                       (5, 7), (5, 8), (6, 2), (6, 3),
-                                       (6, 4), (6, 5), (6, 6), (6, 7),
-                                       (7, 3), (7, 4), (7, 5)]}
-"""

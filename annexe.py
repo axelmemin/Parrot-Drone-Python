@@ -12,23 +12,23 @@ import pygame
 
 
 #definition des mouvements élementaires du drone
-def avant(mambo):
-    mambo.fly_direct(roll=0, pitch=20, yaw=0, vertical_movement=0, duration=0.1)
+def avant(mambo, puiss):
+    mambo.fly_direct(roll=0, pitch=puiss, yaw=0, vertical_movement=0, duration=0.1)
         
-def arriere(mambo):
-    mambo.fly_direct(roll=0, pitch=-20, yaw=0, vertical_movement=0, duration=0.1)
+def arriere(mambo, puiss):
+    mambo.fly_direct(roll=0, pitch=-puiss, yaw=0, vertical_movement=0, duration=0.1)
     
-def gauche(mambo):
-    mambo.fly_direct(roll=-10, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
+def gauche(mambo, puiss):
+    mambo.fly_direct(roll=-puiss, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
     
-def droite(mambo):
-    mambo.fly_direct(roll=10, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
+def droite(mambo, puiss):
+    mambo.fly_direct(roll=puiss, pitch=0, yaw=0, vertical_movement=0, duration=0.1)
 
-def haut(mambo):
-    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=10, duration=0.1)
+def haut(mambo, puiss):
+    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=puiss, duration=0.1)
     
-def bas(mambo):
-    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-10, duration=0.1)
+def bas(mambo, puiss):
+    mambo.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-puiss, duration=0.1)
     
 def rotation(mambo, deg):
         mambo.turn_degrees(deg)
@@ -324,32 +324,32 @@ def carte(path, mambo):
             if path[i][1]==path[i+1][1]+1:
                 if b==0:
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==1 and c==1:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(-90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==1 and c==0:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(-90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 a=0
             else:
                 if b==0:
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==1 and c==0:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==1 and c==1:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(-90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 a=1
             b=0
                 
@@ -359,32 +359,32 @@ def carte(path, mambo):
             if path[i][0]==path[i+1][0]+1:
                 if b==1:
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==0 and a==1:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(-90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==0 and a==0:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 c=1
             else:
                 if b==1:
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==0 and a==0:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 elif b==0 and a==1:
                     mambo.smart_sleep(1)
                     mambo.turn_degrees(-90)
                     mambo.smart_sleep(1)
-                    avant(mambo)
+                    avant(mambo, 20)
                 c=0
             b=1
             

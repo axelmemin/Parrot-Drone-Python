@@ -14,12 +14,19 @@ import time
 import mediapipe as mp
 import random
 from annexe import gauche, droite, haut, bas, avant, arriere, anim
+from cv2 import aruco
+from math import sqrt
+
 
 jeu={'pierre':'feuille', 'feuille':'ciseaux', 'ciseaux':'pierre'}
 obj=['pierre','feuille','ciseaux']
 
 # set this to true if you want to fly for the demo
 testFlying = True
+
+marker_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+
+param_markers = aruco.DetectorParameters_create()
 
 class UserVision:
     def __init__(self, vision):
@@ -64,14 +71,16 @@ def demo_mambo_user_vision_function(mamboVision, args):
     :return:
     """
     mambo = args[0]
+    top=[]
+    dist=0
 
     if (testFlying):
+        print("taking off!")
+        mambo.safe_takeoff(5)
         #tache réalisée si testFlying = True        
         if (mambo.sensors.flying_state != "emergency"):
             q=[]
             score=[0,0]
-            print("taking off!")
-            mambo.safe_takeoff(5)
             drawing = mp.solutions.drawing_utils
             hands = mp.solutions.hands
             hand_obj = hands.Hands(max_num_hands=1)
@@ -91,7 +100,58 @@ def demo_mambo_user_vision_function(mamboVision, args):
                         
                             # Get raw pixels from the screen, save it to a Numpy array
                             frm = np.array(sct.grab(monitor))
+                            
+                            gray_frame = cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY)
+
                             frm = cv2.flip(frm, 1)
+                            
+                            marker_corners, marker_IDs, reject = aruco.detectMarkers(gray_frame, marker_dict, parameters=param_markers)
+                            if marker_corners:
+                                for ids, corners in zip(marker_IDs, marker_corners):
+                                    cv2.polylines(frm, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
+                                    corners = corners.reshape(4, 2)
+                                    corners = corners.astype(int)
+                                    top_right = corners[0].ravel()
+                                    top_left = corners[1].ravel()
+                                    if top==[]:
+                                        top.append(top_right)
+                                        top.append(top_left)
+                                    bottom_right = corners[2].ravel()
+                                    bottom_left = corners[3].ravel()
+                                    cv2.putText(
+                                        frm,
+                                        f"id: {ids[0]}",
+                                        top_right,
+                                        cv2.FONT_HERSHEY_PLAIN,
+                                        1.3,
+                                        (200, 100, 0),
+                                        2,
+                                        cv2.LINE_AA,
+                                    ) 
+                                    
+                                if top != []:
+                                    dist=sqrt((top[0][0]-top[1][0])**2-(top[0][1]-top[1][1])**2)
+                                    dista=sqrt((top_left[0]-top_right[0])**2-(top_left[1]-top_right[1])**2)
+                                    milieu_x=(top[0][0]+top[1][0])/2
+                                    milieu_y=(top[0][1]+top[1][1])/2
+                                    x=(top_left[0]+top_right[0])/2
+                                    y=(top_left[1]+top_right[1])/2
+                                    if dista<dist*0.75:
+                                        print('trop loin')
+                                        avant(mambo,10)
+                                    elif dista>dist*1.25:
+                                        print('trop proche')
+                                        arriere(mambo,10)
+                                    else:
+                                        print('ok distance')
+                                    if x<milieu_x*0.75:
+                                        print('trop gauche')
+                                        droite(mambo,10)
+                                    elif x>milieu_x*1.25:
+                                        print('trop droite')
+                                        gauche(mambo,10)
+                                    else:
+                                        print('ok milieu')
                             
                             res = hand_obj.process(cv2.cvtColor(frm, cv2.COLOR_BGR2RGB))
 
@@ -169,10 +229,10 @@ def demo_mambo_user_vision_function(mamboVision, args):
                             elif y==2:
                                 bas(mambo)
                             """    
-                            if q==[4,5,4]:
+                            if q==[4,3,4]:
                                 cv2.destroyAllWindows()
                                 break
-                        if q==[4,5,4]:
+                        if q==[4,3,4]:
                             break    
                         drone=obj[random.randint(0,2)]
                         vic=0
@@ -197,25 +257,25 @@ def demo_mambo_user_vision_function(mamboVision, args):
                             print(str(score[0])+' - '+str(score[1]))
                             vic=2
                         if drone == 'pierre':
-                            avant(mambo)
-                            mambo.smart_sleep(1)
+                            avant(mambo,20)
+                            mambo.smart_sleep(2)
                             anim(vic, mambo)
-                            mambo.smart_sleep(1)
-                            arriere(mambo)
+                            mambo.smart_sleep(2)
+                            arriere(mambo,20)
                             break
                         elif drone== 'ciseaux':
-                            gauche(mambo)
-                            mambo.smart_sleep(1)
+                            gauche(mambo,20)
+                            mambo.smart_sleep(2)
                             anim(vic, mambo)
-                            mambo.smart_sleep(1)
-                            droite(mambo)
+                            mambo.smart_sleep(2)
+                            droite(mambo,20)
                             break
                         else:
-                            droite(mambo)
-                            mambo.smart_sleep(1)
+                            droite(mambo,20)
+                            mambo.smart_sleep(2)
                             anim(vic, mambo)
-                            mambo.smart_sleep(1)
-                            gauche(mambo)
+                            mambo.smart_sleep(2)
+                            gauche(mambo,20)
                             break
                 q=[]
             print("landing")
