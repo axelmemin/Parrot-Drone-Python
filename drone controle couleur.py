@@ -13,7 +13,7 @@ import numpy as np
 import time
 
 # set this to true if you want to fly for the demo
-testFlying = False
+testFlying = True
 
 class UserVision:
     def __init__(self, vision):
@@ -98,8 +98,10 @@ def demo_mambo_user_vision_function(mamboVision, args):
                             c=[]
                     if cv2.waitKey(1) == ord('q'):
                         break
-            cv2.destroyAllWindows()
+            mamboVision.vision_running = False
+            mambo.disconnect()
             mamboVision.close_exit()
+            cv2.destroyAllWindows()
         print("landing")
         print("flying state is %s" % mambo.sensors.flying_state)
         mambo.safe_land(5)
@@ -167,8 +169,10 @@ def demo_mambo_user_vision_function(mamboVision, args):
                         c=[]
                 if cv2.waitKey(1) == ord('q'):
                     break
-        cv2.destroyAllWindows()
+        mamboVision.vision_running = False
+        mambo.disconnect()
         mamboVision.close_exit()
+        cv2.destroyAllWindows()
 
     # done doing vision demo
     print("Ending the sleep and vision")

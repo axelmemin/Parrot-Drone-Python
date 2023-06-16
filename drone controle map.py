@@ -32,10 +32,6 @@ class UserVision:
 
 p=grille()
 
-#stockage manipulation à réaliser aux points de manipulation 
-#manip sera determiné par interpretation video live avec detection couleur, marqueur aruco ou signe main
-manip=[1,2,3]
-
 mamboAddr = "fe80::8469:b69f:b4b0:16bb%9"
 
 # make my mambo object
@@ -68,8 +64,8 @@ def demo_mambo_user_vision_function(mamboVision, args):
             main=[]
             with mss.mss() as sct:
                 # Part of the screen to capture
-                monitor = {"top": 0, "left": 0, "width": 2000, "height": 2000}
-                main=[]
+                monitor = {"top": 0, "left": 0, "width": 1920, "height": 880}
+                main=[6]
                 while "Screen capturing":
                     end_time = time.time()
                 
@@ -91,7 +87,7 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                 start_time = time.time()
                                 start_init = True
 
-                            elif (end_time-start_time) > 0.2:
+                            elif (end_time-start_time) > 1:
                                 if (cnt == 1):
                                     print(1)
                                     main.append(1)

@@ -24,7 +24,7 @@ obj=['pierre','feuille','ciseaux']
 # set this to true if you want to fly for the demo
 testFlying = True
 
-marker_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+marker_dict = aruco.Dictionary_get(aruco.DICT_5X5_250)
 
 param_markers = aruco.DetectorParameters_create()
 
@@ -57,7 +57,7 @@ def count_fingers(lst):
     if (lst.landmark[17].y*100 - lst.landmark[20].y*100) > thresh:
         cnt += 1
 
-    if (lst.landmark[5].x*100 - lst.landmark[4].x*100) > 6:
+    if (lst.landmark[5].x*100 - lst.landmark[4].x*100) > thresh/2:
         cnt += 1
         
     return cnt 
@@ -77,6 +77,8 @@ def demo_mambo_user_vision_function(mamboVision, args):
     if (testFlying):
         print("taking off!")
         mambo.safe_takeoff(5)
+        mambo.smart_sleep(1)
+        bas(mambo,10)
         #tache réalisée si testFlying = True        
         if (mambo.sensors.flying_state != "emergency"):
             q=[]
@@ -94,7 +96,7 @@ def demo_mambo_user_vision_function(mamboVision, args):
                 while True and q!=[4,3,4]:
                     with mss.mss() as sct:
                         # Part of the screen to capture
-                        monitor = {"top": 0, "left": 0, "width": 2000, "height": 2000}
+                        monitor = {"top": 0, "left": 0, "width": 1920, "height": 880}
                         while "Screen capturing":
                             end_time = time.time()
                         
@@ -128,31 +130,30 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                         2,
                                         cv2.LINE_AA,
                                     ) 
-                                    
+                                """    
                                 if top != []:
                                     dist=sqrt((top[0][0]-top[1][0])**2-(top[0][1]-top[1][1])**2)
                                     dista=sqrt((top_left[0]-top_right[0])**2-(top_left[1]-top_right[1])**2)
                                     milieu_x=(top[0][0]+top[1][0])/2
-                                    milieu_y=(top[0][1]+top[1][1])/2
                                     x=(top_left[0]+top_right[0])/2
-                                    y=(top_left[1]+top_right[1])/2
-                                    if dista<dist*0.75:
+                                    
+                                    if dista<dist*0.80:
                                         print('trop loin')
                                         avant(mambo,10)
-                                    elif dista>dist*1.25:
+                                    elif dista>dist*1.20:
                                         print('trop proche')
                                         arriere(mambo,10)
                                     else:
                                         print('ok distance')
-                                    if x<milieu_x*0.75:
+                                    if x<milieu_x*0.80:
                                         print('trop gauche')
                                         droite(mambo,10)
-                                    elif x>milieu_x*1.25:
+                                    elif x>milieu_x*1.20:
                                         print('trop droite')
                                         gauche(mambo,10)
                                     else:
                                         print('ok milieu')
-                            
+                            """
                             res = hand_obj.process(cv2.cvtColor(frm, cv2.COLOR_BGR2RGB))
 
                             if res.multi_hand_landmarks:
@@ -234,7 +235,8 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                 break
                         if q==[4,3,4]:
                             break    
-                        drone=obj[random.randint(0,2)]
+                        #drone=obj[random.randint(0,2)]
+                        drone='ciseaux'
                         vic=0
                         if jeu[drone]==choix:
                             score[0]=score[0]+1
@@ -257,25 +259,25 @@ def demo_mambo_user_vision_function(mamboVision, args):
                             print(str(score[0])+' - '+str(score[1]))
                             vic=2
                         if drone == 'pierre':
-                            avant(mambo,20)
+                            avant(mambo,25)
                             mambo.smart_sleep(2)
                             anim(vic, mambo)
                             mambo.smart_sleep(2)
-                            arriere(mambo,20)
+                            arriere(mambo,25)
                             break
-                        elif drone== 'ciseaux':
-                            gauche(mambo,20)
+                        elif drone== 'feuille':
+                            gauche(mambo,25)
                             mambo.smart_sleep(2)
                             anim(vic, mambo)
                             mambo.smart_sleep(2)
-                            droite(mambo,20)
+                            droite(mambo,25)
                             break
                         else:
-                            droite(mambo,20)
+                            droite(mambo,25)
                             mambo.smart_sleep(2)
                             anim(vic, mambo)
                             mambo.smart_sleep(2)
-                            gauche(mambo,20)
+                            gauche(mambo,25)
                             break
                 q=[]
             print("landing")
@@ -365,30 +367,7 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                             q.append(5)
                                         prev = cnt
                                         start_init = False
-                                        
-                                for i in range(21):
-                                    if hand_keyPoints.landmark[i].x*100 < 20 :
-                                        x=1
-                                    elif hand_keyPoints.landmark[i].x*100 > 80 :
-                                        x=2
-                                    else:
-                                        x=0
-                                    if hand_keyPoints.landmark[i].y*100 < 20 :
-                                        y=1
-                                    elif hand_keyPoints.landmark[i].y*100 > 80 :
-                                        y=2
-                                    else:
-                                        y=0
-                                
-                            if x==1:
-                                print('dehors gauche')
-                            elif x==2:
-                                print('dehors droite')
-                            if y==1:
-                                print('dehors haut')
-                            elif y==2:
-                                print('dehors bas')
-                                                            
+                                 
                             if cv2.waitKey(1) == ord('q'):
                                 cv2.destroyAllWindows()
                                 break
@@ -424,12 +403,13 @@ def demo_mambo_user_vision_function(mamboVision, args):
     print("disconnecting")
     mambo.disconnect()
 
+wifi_ip='192.168.99.33'
 
 if __name__ == "__main__":
-    mamboAddr = "fe80::8469:b69f:b4b0:16bb%10"
+    mamboAddr = "e0:14:d0:63:3d:d0"
 
     # make my mambo object
-    mambo = Mambo(mamboAddr, use_wifi=True)
+    mambo = Mambo(mamboAddr, use_wifi=True, wifi_ip=wifi_ip)
     print("trying to connect to mambo now")
     success = mambo.connect(num_retries=3)
     print("connected: %s" % success)
@@ -444,7 +424,7 @@ if __name__ == "__main__":
         print("Preparing to open vision")
         #réalise tâche dicté par la fonction 'demo_mambo_user_vision_function' lorsque bouton vlc player 'run' actionné        
         mamboVision = DroneVisionGUI(mambo, is_bebop=False, buffer_size=200,
-                                     user_code_to_run=demo_mambo_user_vision_function, user_args=(mambo, ))
+                                     user_code_to_run=demo_mambo_user_vision_function, user_args=(mambo, ),wifi_ip=wifi_ip)
         userVision = UserVision(mamboVision)
         mamboVision.set_user_callback_function(userVision.save_pictures, user_callback_args=None)
         mamboVision.open_video()

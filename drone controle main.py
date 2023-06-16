@@ -65,7 +65,7 @@ def count_fingers(lst):
     if (lst.landmark[17].y*100 - lst.landmark[20].y*100) > thresh:
         cnt += 1
 
-    if (lst.landmark[5].x*100 - lst.landmark[4].x*100) > 6:
+    if (lst.landmark[5].x*100 - lst.landmark[4].x*100) > thresh/2:
         cnt += 1
         
     return cnt 
@@ -116,7 +116,7 @@ def demo_mambo_user_vision_function(mamboVision, args):
                                 start_time = time.time()
                                 start_init = True
 
-                            elif (end_time-start_time) > 0.2:
+                            elif (end_time-start_time) > 0.8:
                                 if (cnt == 1):
                                     print(1)
                                     main.append(1)
@@ -156,14 +156,15 @@ def demo_mambo_user_vision_function(mamboVision, args):
                     if cv2.waitKey(1) == ord('q'):
                         break
                     
-            cv2.destroyAllWindows()
             mamboVision.vision_running = False
+            mambo.disconnect()
             mamboVision.close_exit()
+            cv2.destroyAllWindows()
     else:
         #tache réalisée si testFlying = False        
         with mss.mss() as sct:
             # Part of the screen to capture
-            monitor = {"top": 100, "left": 50, "width": 2000, "height": 2000}
+            monitor = {"top": 100, "left": 50, "width": 1920, "height": 880}
             drawing = mp.solutions.drawing_utils
             hands = mp.solutions.hands
             hand_obj = hands.Hands(max_num_hands=1)
@@ -219,10 +220,10 @@ def demo_mambo_user_vision_function(mamboVision, args):
 
                 if cv2.waitKey(1) == ord('q'):
                     break
-        cv2.destroyAllWindows()
         mamboVision.vision_running = False
+        mambo.disconnect()
         mamboVision.close_exit()
-
+        cv2.destroyAllWindows()
     # done doing vision demo
     print("Ending the sleep and vision")
     mamboVision.close_video()
@@ -237,7 +238,7 @@ if __name__ == "__main__":
     mamboAddr = "fe80::8469:b69f:b4b0:16bb%10"
 
     # make my mambo object
-    mambo = Mambo(mamboAddr, use_wifi=True)
+    mambo = Mambo(mamboAddr, use_wifi=True, drone_ip="192.168.99.33")
     print("trying to connect to mambo now")
     success = mambo.connect(num_retries=3)
     print("connected: %s" % success)
